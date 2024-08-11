@@ -59,3 +59,13 @@ jobs:
   deploy:
     needs: docker-build-and-push
     runs-on: [ self-hosted, dev ]
+    steps:
+      - name: Pull Image And Restart Container
+        run: |
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker stop ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev | true
+          docker rm ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev | true
+          docker image prune -a -f
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+          docker run --name ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev -d -p 8080:8080 -v /logs:/logs ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+
