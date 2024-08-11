@@ -36,6 +36,7 @@ jobs:
       - name: Set Application yml
         run: |
           echo $(pwd)
+          ls -al
           echo "${{ secrets.APPLICATION_YAML_DEV }}" >> src/main/resources/application.yml
       - name: Build with Gradle Wrapper
         run: |
