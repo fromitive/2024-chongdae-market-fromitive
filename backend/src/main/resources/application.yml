@@ -1,11 +1,6 @@
 spring:
   application:
     name: chongdae
-
-  config:
-    activate:
-      on-profile: dev
-
   datasource:
     url: jdbc:h2:mem:database
   #  h2:
@@ -26,41 +21,41 @@ spring:
       max-file-size: 20MB
       max-request-size: 20MB
 
-  springdoc:
-    swagger-ui:
-      path: swagger-ui.html
-      url: /static/swagger-ui/openapi3.yaml
+springdoc:
+  swagger-ui:
+    path: swagger-ui.html
+    url: /static/swagger-ui/openapi3.yaml
 
-  amazon:
-    s3:
-      bucket: techcourse-project-2024
-    cloudfront:
-      redirectUrl: d3a5rfnjdz82qu.cloudfront.net
+amazon:
+  s3:
+    bucket: techcourse-project-2024
+  cloudfront:
+    redirectUrl: d3a5rfnjdz82qu.cloudfront.net
 
-  security:
-    jwt:
-      token:
-        access-secret-key: testAccessSecretKeytestAccessSecretKeytestAccessSecretKeytestAccessSecretKeytest
-        refresh-secret-key: testRefreshSecretKeytestRefreshSecretKeytestRefreshSecretKeytestRefreshSecretKeytest
-        access-token-expired: 30m
-        refresh-token-expired: 14d
+security:
+  jwt:
+    token:
+      access-secret-key: testAccessSecretKeytestAccessSecretKeytestAccessSecretKeytestAccessSecretKeytest
+      refresh-secret-key: testRefreshSecretKeytestRefreshSecretKeytestRefreshSecretKeytestRefreshSecretKeytest
+      access-token-expired: 30m
+      refresh-token-expired: 14d
 
-  components:
-    securitySchemes:
-      cookieAuth:
-        type: apiKey
-        in: cookie
-        name: JSESSIONID
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
 
-  logging:
-    level:
-      com.zzang.chongdae: INFO
-    file:
-      name: /logs/backend.log
-    pattern:
-      file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    logback:
-      rollingpolicy:
-        file-name-pattern: /logs/backend.%d{yyyy-MM-dd}.%i.log
-        max-file-size: 100MB
-        max-history: 14
+logging:
+  level:
+    com.zzang.chongdae: INFO
+  file:
+    name: /logs/backend.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      file-name-pattern: /logs/backend.%d{yyyy-MM-dd}.%i.log
+      max-file-size: 100MB
+      max-history: 14

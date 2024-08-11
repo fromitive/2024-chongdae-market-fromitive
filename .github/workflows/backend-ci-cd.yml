@@ -2,8 +2,7 @@ name: Backend CI/CD Workflow
 
 on:
   pull_request:
-    branches: [ "develop-BE" ]
-    paths: [ "backend/**" ]
+    branches: [ "develop-BE", "main" ]
 
 jobs:
   build-and-test:
@@ -31,12 +30,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-#      - name: Set up Gradle
-#        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
-      - name: Set Application yml
+      - name: Set Application yml for dev
+        if: github.ref == 'refs/heads/develop-BE'
         run: |
           echo "${{ secrets.APPLICATION_YML_DEV_BASE64 }}" | base64 --decode > src/main/resources/application.yml
         working-directory: ./backend
+
+      - name: Set Application yml for prod
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.APPLICATION_YML_PROD_BASE64 }}" | base64 --decode > src/main/resources/application.yml
+        working-directory: ./backend
+
       - name: Build with Gradle Wrapper
         run: |
           ./gradlew clean
@@ -44,23 +49,54 @@ jobs:
           ./gradlew build
         working-directory: ./backend
 
-      - name: Docker build and push
-        run: |
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-          docker build --build-arg PROFILE=dev -t ${{ secrets.DOCKERHUB_IMAGE_NAME }} .
-          docker tag ${{ secrets.DOCKERHUB_IMAGE_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:${GITHUB_SHA::7}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:${GITHUB_SHA::7}
-
-  deploy:
+  docker-build-and-push:
     needs: build-and-test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Docker build and push for dev
+        if: github.ref == 'refs/heads/develop-BE'
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev .
+          docker tag ${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+
+      - name: Docker build and push for prod
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_IMAGE_NAME }}:prod .
+          docker tag ${{ secrets.DOCKERHUB_IMAGE_NAME }}:prod ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:prod-${GITHUB_SHA::7}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:prod-${GITHUB_SHA::7}
+
+  deploy-dev:
+    needs: docker-build-and-push
+    if: github.ref == 'refs/heads/devlop-BE'
+    runs-on: [ self-hosted, dev ]
 
     steps:
       - name: Pull Image And Restart Container
         run: |
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-          docker stop ${{ secrets.DOCKERHUB_CONTAINER_NAME }} | true
-          docker rm ${{ secrets.DOCKERHUB_CONTAINER_NAME }} | true
+          docker stop ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev | true
+          docker rm ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev | true
           docker image prune -a -f
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:${GITHUB_SHA::7}
-          docker run --name ${{ secrets.DOCKERHUB_CONTAINER_NAME }} -d -p 8080:8080 -v /logs:/logs ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:${GITHUB_SHA::7}
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+          docker run --name ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev -d -p 8080:8080 -v /logs:/logs ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+
+  deploy-prod:
+    needs: docker-build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: [ self-hosted, prod ]
+
+    steps:
+      - name: Pull Image And Restart Container
+        run: |
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker stop ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-prod | true
+          docker rm ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-prod | true
+          docker image prune -a -f
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:prod-${GITHUB_SHA::7}
+          docker run --name ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-prod -d -p 8080:8080 -v /logs:/logs ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:prod-${GITHUB_SHA::7}
