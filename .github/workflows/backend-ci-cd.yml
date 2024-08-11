@@ -35,7 +35,7 @@ jobs:
 #        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
       - name: Set Application yml
         run: |
-          echo "${{ secrets.APPLICATION_YAML_DEV }}" >> src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML_DEV_BASE64 }}" | base64 --decode > src/main/resources/application.yml
         working-directory: ./backend
       - name: Build with Gradle Wrapper
         run: |
