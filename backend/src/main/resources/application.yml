@@ -2,18 +2,20 @@ spring:
   application:
     name: chongdae
   datasource:
-    url: jdbc:h2:mem:database
-  #  h2:
-  #    console:
-  #      enabled: true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     show-sql: true
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
   servlet:
     multipart:
       enabled: true
@@ -35,8 +37,8 @@ amazon:
 security:
   jwt:
     token:
-      access-secret-key: testAccessSecretKeytestAccessSecretKeytestAccessSecretKeytestAccessSecretKeytest
-      refresh-secret-key: testRefreshSecretKeytestRefreshSecretKeytestRefreshSecretKeytestRefreshSecretKeytest
+      access-secret-key: ${JWT_ACCESS_SECRET_KEY}
+      refresh-secret-key: ${JWT_REFRESH_SECRET_KEY}
       access-token-expired: 30m
       refresh-token-expired: 14d
 
