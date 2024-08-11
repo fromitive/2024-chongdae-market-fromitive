@@ -18,3 +18,8 @@ security:
       refresh-secret-key: refreshSecretKey
       access-token-expired: 30m
       refresh-token-expired: 14d
+amazon:
+  s3:
+    bucket: techcourse-project-2024
+  cloudfront:
+    redirectUrl: test.url.net
