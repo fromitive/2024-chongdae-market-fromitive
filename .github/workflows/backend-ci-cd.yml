@@ -60,5 +60,5 @@ jobs:
           docker rm ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev | true
           docker image prune -a -f
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
-          docker run -e SPRING_PROFILES_ACTIVE=dev --name ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev -d -p 8080:8080 -v /logs:/logs ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
+          docker run --name ${{ secrets.DOCKERHUB_CONTAINER_NAME }}-dev -d -p 8080:8080 -v /logs:/logs -e SPRING_PROFILES_ACTIVE=dev ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_IMAGE_NAME }}:dev-${GITHUB_SHA::7}
 
