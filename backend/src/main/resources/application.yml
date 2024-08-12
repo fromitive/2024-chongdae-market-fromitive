@@ -2,20 +2,14 @@ spring:
   application:
     name: chongdae
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:h2:mem:database
   jpa:
     show-sql: true
-    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQLDialect
   servlet:
     multipart:
       enabled: true
@@ -23,22 +17,16 @@ spring:
       max-file-size: 20MB
       max-request-size: 20MB
 
-springdoc:
-  swagger-ui:
-    path: swagger-ui.html
-    url: /static/swagger-ui/openapi3.yaml
-
-amazon:
-  s3:
-    bucket: techcourse-project-2024
-  cloudfront:
-    redirectUrl: d3a5rfnjdz82qu.cloudfront.net
+  springdoc:
+    swagger-ui:
+      path: swagger-ui.html
+      url: /static/swagger-ui/openapi3.yaml
 
 security:
   jwt:
     token:
-      access-secret-key: ${JWT_ACCESS_SECRET_KEY}
-      refresh-secret-key: ${JWT_REFRESH_SECRET_KEY}
+      access-secret-key: testSecretkey
+      refresh-secret-key: testSecretkeytestSecretkeytestSecretkeytestSecretkey
       access-token-expired: 30m
       refresh-token-expired: 14d
 
@@ -49,15 +37,9 @@ components:
       in: cookie
       name: JSESSIONID
 
-logging:
-  level:
-    com.zzang.chongdae: INFO
-  file:
-    name: /logs/backend.log
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  logback:
-    rollingpolicy:
-      file-name-pattern: /logs/backend.%d{yyyy-MM-dd}.%i.log
-      max-file-size: 100MB
-      max-history: 14
+amazon:
+  s3:
+    bucket: techcourse-project-2024
+  cloudfront:
+    redirectUrl: d3a5rfnjdz82qu.cloudfront.net
+
